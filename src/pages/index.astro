@@ -295,7 +295,11 @@ function formatDate(date: Date) {
   let resizeTimer: ReturnType<typeof setTimeout>;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { resize(); initNodes(); }, 150);
+    resizeTimer = setTimeout(() => {
+      const prevW = w;
+      resize();
+      if (Math.abs(w - prevW) > 10) initNodes();
+    }, 150);
   });
 </script>
 
