@@ -1,0 +1,210 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+// Group by year
+const postsByYear: Record<number, typeof posts> = {};
+for (const post of posts) {
+  const year = post.data.pubDate.getFullYear();
+  if (!postsByYear[year]) postsByYear[year] = [];
+  postsByYear[year].push(post);
+}
+const years = Object.keys(postsByYear)
+  .map(Number)
+  .sort((a, b) => b - a);
+---
+
+<BaseLayout
+  title="Blog"
+  description="Writing by Philipp Wolf on development, design, and building for the web."
+>
+  <div class="container">
+
+    <header class="page-header animate" style="--delay: 0ms">
+      <p class="page-eyebrow">Writing</p>
+      <h1 class="page-title">Blog</h1>
+    </header>
+
+    <div class="posts-container">
+      {years.map((year, yi) => (
+        <section class="year-group">
+          <h2 class="year-label animate" style={`--delay: ${100 + yi * 50}ms`}>{year}</h2>
+          <div class="post-list">
+            {postsByYear[year].map((post, i) => (
+              <article class="post-item animate" style={`--delay: ${140 + yi * 50 + i * 70}ms`}>
+                <time class="post-date" datetime={post.data.pubDate.toISOString()}>
+                  {formatDate(post.data.pubDate)}
+                </time>
+                <div class="post-content">
+                  <h3 class="post-title">
+                    <a href={`/blog/${post.slug}/`}>{post.data.title}</a>
+                  </h3>
+                  <p class="post-desc">{post.data.description}</p>
+                  {post.data.tags && post.data.tags.length > 0 && (
+                    <div class="tag-row">
+                      {post.data.tags.map(tag => <span class="tag">{tag}</span>)}
+                    </div>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+  </div>
+</BaseLayout>
+
+<style>
+  .container {
+    padding-top: clamp(3rem, 7vw, 6rem);
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+  }
+
+  .page-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 3rem;
+    margin-bottom: 0;
+  }
+
+  .page-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 1.25rem;
+  }
+
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 300;
+    letter-spacing: -0.025em;
+    margin-bottom: 1rem;
+  }
+
+  .page-desc {
+    font-size: var(--text-base);
+    font-weight: 300;
+    color: var(--fg-muted);
+    max-width: 50ch;
+  }
+
+  /* ── Year groups ───────────────────────────────────────── */
+  .posts-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .year-group {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .year-group {
+      grid-template-columns: 5rem 1fr;
+      gap: 0 3rem;
+    }
+  }
+
+  .year-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--fg-muted);
+    padding-top: 2.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 639px) {
+    .year-label {
+      padding-top: 2.5rem;
+      padding-bottom: 0.75rem;
+    }
+  }
+
+  /* ── Post items ────────────────────────────────────────── */
+  .post-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .post-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-block: 2.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  @media (min-width: 640px) {
+    .post-item {
+      flex-direction: row;
+      gap: 3rem;
+      align-items: flex-start;
+    }
+  }
+
+  .post-date {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--fg-muted);
+    white-space: nowrap;
+    padding-top: 0.4em;
+    min-width: 10rem;
+  }
+
+  .post-title {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+  }
+
+  .post-title a {
+    transition: color var(--transition);
+  }
+
+  .post-title a:hover {
+    color: var(--accent);
+  }
+
+  .post-desc {
+    font-size: var(--text-sm);
+    color: var(--fg-muted);
+    line-height: 1.65;
+    max-width: 55ch;
+    margin-bottom: 0.75rem;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    border: 1px solid color-mix(in oklch, var(--accent) 40%, transparent);
+    padding: 0.2em 0.6em;
+    border-radius: 2px;
+  }
+</style>

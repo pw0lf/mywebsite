@@ -1,0 +1,87 @@
+---
+import Nav from '../components/Nav.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Philipp Wolf — developer & writer' } = Astro.props;
+const fullTitle = title === 'Home' ? 'Philipp Wolf' : `${title} — Philipp Wolf`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <title>{fullTitle}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Prevent flash of wrong theme -->
+    <script is:inline>
+      (function () {
+        const saved = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute(
+          'data-theme',
+          saved ?? (prefersDark ? 'dark' : 'light')
+        );
+      })();
+    </script>
+  </head>
+  <body>
+    <Nav />
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p class="footer-copy">© {new Date().getFullYear()} Philipp Wolf</p>
+        <p class="footer-note">
+          Built with <a href="https://astro.build" target="_blank" rel="noopener">Astro</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding-block: 2rem;
+    margin-top: 6rem;
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .footer-copy,
+  .footer-note {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--fg-muted);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .footer-note a {
+    color: var(--fg-muted);
+    text-decoration: underline;
+    text-decoration-color: var(--border);
+    transition: color var(--transition);
+  }
+
+  .footer-note a:hover {
+    color: var(--accent);
+  }
+</style>
